@@ -1,0 +1,89 @@
+institution: Bank of Canada
+language: en-CA
+
+spelling:
+  color: colour
+  colors: colours
+  colored: coloured
+  analyze: analyse
+  analyzed: analysed
+  analyzing: analysing
+  center: centre
+  centers: centres
+  centered: centred
+  defense: defence
+  favor: favour
+  favorable: favourable
+  honor: honour
+  labor: labour
+  modeling: modelling
+  modeled: modelled
+  program: programme
+  recognize: recognise
+  recognized: recognised
+  offense: offence
+  license: licence
+  practice: practise
+  catalog: catalogue
+  dialog: dialogue
+  judgment: judgement
+  aluminum: aluminium
+  optimize: optimise
+  optimized: optimised
+  utilize: utilise
+  utilized: utilised
+  standardize: standardise
+  characterize: characterise
+  minimize: minimise
+  maximize: maximise
+  customize: customise
+  summarize: summarise
+  organize: organise
+  authorize: authorise
+  behavior: behaviour
+  neighbor: neighbour
+  endeavor: endeavour
+  humor: humour
+  rumor: rumour
+  vigor: vigour
+  tumor: tumour
+
+acronyms:
+  DSGE: Dynamic Stochastic General Equilibrium
+  NAIRU: Non-Accelerating Inflation Rate of Unemployment
+  CPI: Consumer Price Index
+  GDP: Gross Domestic Product
+  BoC: Bank of Canada
+  CBDC: Central Bank Digital Currency
+  QE: Quantitative Easing
+  MPR: Monetary Policy Report
+  FSR: Financial System Review
+  OSFI: Office of the Superintendent of Financial Institutions
+  IMF: International Monetary Fund
+  BIS: Bank for International Settlements
+  OIS: Overnight Index Swap
+  GFC: Global Financial Crisis
+  HQLA: High-Quality Liquid Assets
+  LCR: Liquidity Coverage Ratio
+  NSFR: Net Stable Funding Ratio
+  LVTS: Large Value Transfer System
+  VAR: Vector Autoregression
+  SVAR: Structural Vector Autoregression
+  MCMC: Markov Chain Monte Carlo
+  MLE: Maximum Likelihood Estimation
+  OLS: Ordinary Least Squares
+  GMM: Generalized Method of Moments
+
+required_sections:
+  - Abstract
+  - JEL Classification
+  - References
+
+disclaimer_text: "The views expressed in this paper are those of the authors and do not necessarily reflect those of the Bank of Canada."
+
+template:
+  documentclass: article
+  required_packages:
+    - amsmath
+    - geometry
+  font_size: "12pt"

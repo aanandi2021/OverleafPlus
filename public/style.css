@@ -432,3 +432,300 @@ html, body {
   border-radius: 4px;
   margin-top: 8px;
 }
+
+/* ===== Editor Tabs ===== */
+.editor-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Paste LaTeX Tab ===== */
+.paste-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 16px;
+  gap: 12px;
+}
+
+.paste-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.paste-area {
+  flex: 1;
+  background: #282c34;
+  color: #abb2bf;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 13px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+
+.paste-area:focus {
+  border-color: var(--accent);
+}
+
+.paste-load-btn {
+  align-self: flex-end;
+  padding: 8px 20px !important;
+  font-size: 13px !important;
+}
+
+/* ===== Compliance Panel ===== */
+.compliance-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.compliance-placeholder {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding-top: 40px;
+}
+
+.compliance-loading {
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 40px;
+  font-size: 14px;
+}
+
+.compliance-error {
+  color: var(--red);
+  padding: 12px;
+}
+
+.compliance-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-stat {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.summary-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.chip-error {
+  background: rgba(243, 139, 168, 0.2);
+  color: #f38ba8;
+}
+
+.chip-warning {
+  background: rgba(249, 226, 175, 0.2);
+  color: #f9e2af;
+}
+
+.chip-fix {
+  background: rgba(166, 227, 161, 0.2);
+  color: #a6e3a1;
+}
+
+.apply-all-btn {
+  margin-left: auto;
+  font-size: 12px !important;
+  padding: 5px 14px !important;
+}
+
+.compliance-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compliance-pass {
+  color: var(--green);
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
+
+/* Compliance items */
+.compliance-item {
+  border-radius: 6px;
+  padding: 10px 12px;
+  border-left: 3px solid transparent;
+  transition: opacity 0.2s;
+}
+
+.item-error {
+  background: rgba(243, 139, 168, 0.08);
+  border-left-color: #f38ba8;
+}
+
+.item-warning {
+  background: rgba(249, 226, 175, 0.08);
+  border-left-color: #f9e2af;
+}
+
+.item-fix {
+  background: rgba(166, 227, 161, 0.08);
+  border-left-color: #a6e3a1;
+}
+
+.item-accepted {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.item-accepted::after {
+  content: ' ✓ Applied';
+  color: var(--green);
+  font-size: 11px;
+}
+
+.item-rejected {
+  opacity: 0.3;
+  pointer-events: none;
+  text-decoration: line-through;
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.item-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-error {
+  background: #f38ba8;
+  color: #1e1e2e;
+}
+
+.badge-warning {
+  background: #f9e2af;
+  color: #1e1e2e;
+}
+
+.badge-fix {
+  background: #a6e3a1;
+  color: #1e1e2e;
+}
+
+.item-type {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.item-line {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.item-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.fix-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.fix-accept:hover {
+  background: #a6e3a1;
+  color: #1e1e2e;
+  border-color: #a6e3a1;
+}
+
+.fix-reject:hover {
+  background: #f38ba8;
+  color: #1e1e2e;
+  border-color: #f38ba8;
+}
+
+.item-message {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.item-context {
+  margin-top: 4px;
+}
+
+.item-context code {
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

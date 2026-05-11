@@ -55,13 +55,40 @@
     <!-- Center: Editor Panel -->
     <section id="panel-editor" class="panel panel-editor">
       <div class="panel-header">
-        <span>LaTeX Editor</span>
+        <div class="editor-tabs">
+          <button class="tab-btn active" data-tab="editor">📝 Editor</button>
+          <button class="tab-btn" data-tab="paste">📋 Paste LaTeX</button>
+          <button class="tab-btn" data-tab="compliance">✅ Compliance</button>
+        </div>
         <div class="panel-actions">
+          <button id="btn-check" class="panel-btn" title="Check Compliance">🔍 Check</button>
           <button id="btn-copy" class="panel-btn" title="Copy LaTeX">📋 Copy</button>
           <button id="btn-render" class="panel-btn primary" title="Render Preview">▶ Render</button>
         </div>
       </div>
-      <div id="editor-container" class="editor-container"></div>
+
+      <!-- Editor tab -->
+      <div id="tab-editor" class="tab-content active">
+        <div id="editor-container" class="editor-container"></div>
+      </div>
+
+      <!-- Paste LaTeX tab -->
+      <div id="tab-paste" class="tab-content">
+        <div class="paste-container">
+          <p class="paste-hint">Paste existing LaTeX below — it will load into the editor and compile automatically.</p>
+          <textarea id="paste-area" class="paste-area" placeholder="Paste your LaTeX source here..."></textarea>
+          <button id="btn-load-paste" class="panel-btn primary paste-load-btn">Load &amp; Compile</button>
+        </div>
+      </div>
+
+      <!-- Compliance tab -->
+      <div id="tab-compliance" class="tab-content">
+        <div id="compliance-panel" class="compliance-panel">
+          <div class="compliance-placeholder">
+            <p>Click <strong>🔍 Check</strong> to analyze the current LaTeX against Bank of Canada style rules.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Right: Preview Panel -->

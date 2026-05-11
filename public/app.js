@@ -4,6 +4,7 @@
 let chatHistory = []; // { role, content } for LLM context
 let editorTextarea = null;
 let renderTimeout = null;
+let lastComplianceResults = null;
 
 // ===== DOM elements =====
 const chatMessages = document.getElementById('chat-messages');
@@ -11,10 +12,14 @@ const chatInput = document.getElementById('chat-input');
 const btnSend = document.getElementById('btn-send');
 const btnRender = document.getElementById('btn-render');
 const btnCopy = document.getElementById('btn-copy');
+const btnCheck = document.getElementById('btn-check');
 const btnNew = document.getElementById('btn-new');
 const previewContainer = document.getElementById('preview-container');
 const previewStatus = document.getElementById('preview-status');
 const editorContainer = document.getElementById('editor-container');
+const compliancePanel = document.getElementById('compliance-panel');
+const pasteArea = document.getElementById('paste-area');
+const btnLoadPaste = document.getElementById('btn-load-paste');
 
 // Panel toggle buttons
 const toggleChat = document.getElementById('btn-toggle-chat');
@@ -268,6 +273,7 @@ btnRender.addEventListener('click', () => {
 });
 btnCopy.addEventListener('click', copyLatex);
 btnNew.addEventListener('click', newDocument);
+btnCheck.addEventListener('click', runComplianceCheck);
 
 chatInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -285,6 +291,187 @@ chatInput.addEventListener('input', () => {
 setupToggle(toggleChat, 'panel-chat');
 setupToggle(toggleEditor, 'panel-editor');
 setupToggle(togglePreview, 'panel-preview');
+
+// ===== Tab Switching =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// ===== Paste LaTeX =====
+btnLoadPaste.addEventListener('click', () => {
+  const pasted = pasteArea.value.trim();
+  if (!pasted) return;
+  setEditorContent(pasted);
+  pasteArea.value = '';
+  // Switch to editor tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('[data-tab="editor"]').classList.add('active');
+  document.getElementById('tab-editor').classList.add('active');
+  // Compile
+  clearTimeout(renderTimeout);
+  renderPreview();
+});
+
+// ===== Compliance Check =====
+async function runComplianceCheck() {
+  const latex = getEditorContent().trim();
+  if (!latex || latex === '% Your LaTeX document will appear here') {
+    alert('No LaTeX to check. Write or paste a document first.');
+    return;
+  }
+
+  // Switch to compliance tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('[data-tab="compliance"]').classList.add('active');
+  document.getElementById('tab-compliance').classList.add('active');
+
+  compliancePanel.innerHTML = '<div class="compliance-loading">⏳ Checking compliance...</div>';
+
+  try {
+    const res = await fetch('/api/check-compliance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latex })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      compliancePanel.innerHTML = `<div class="compliance-error">Error: ${escapeHtml(data.error)}</div>`;
+      return;
+    }
+    lastComplianceResults = data;
+    renderComplianceResults(data);
+  } catch (err) {
+    compliancePanel.innerHTML = `<div class="compliance-error">Network error: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderComplianceResults(data) {
+  const { errors, warnings, fixes, stats } = data;
+  const total = errors.length + warnings.length + fixes.length;
+
+  let html = `<div class="compliance-summary">
+    <span class="summary-stat"><strong>${stats.totalChecks}</strong> issues found</span>
+    <span class="summary-chip chip-error">${errors.length} errors</span>
+    <span class="summary-chip chip-warning">${warnings.length} warnings</span>
+    <span class="summary-chip chip-fix">${fixes.length} auto-fixable</span>`;
+  if (fixes.length > 0) {
+    html += `<button id="btn-apply-all" class="panel-btn primary apply-all-btn">✨ Apply All Fixes</button>`;
+  }
+  html += `</div><div class="compliance-items">`;
+
+  if (total === 0) {
+    html += '<div class="compliance-pass">✅ All checks passed! Document is compliant.</div>';
+  }
+
+  // Errors
+  for (const item of errors) {
+    html += `<div class="compliance-item item-error">
+      <div class="item-header">
+        <span class="item-badge badge-error">ERROR</span>
+        <span class="item-type">${escapeHtml(item.type)}</span>
+        ${item.line ? `<span class="item-line">Line ${item.line}</span>` : ''}
+      </div>
+      <div class="item-message">${escapeHtml(item.message)}</div>
+      ${item.context ? `<div class="item-context"><code>${escapeHtml(item.context)}</code></div>` : ''}
+    </div>`;
+  }
+
+  // Warnings
+  for (const item of warnings) {
+    html += `<div class="compliance-item item-warning">
+      <div class="item-header">
+        <span class="item-badge badge-warning">WARNING</span>
+        <span class="item-type">${escapeHtml(item.type)}</span>
+        ${item.line ? `<span class="item-line">Line ${item.line}</span>` : ''}
+      </div>
+      <div class="item-message">${escapeHtml(item.message)}</div>
+      ${item.context ? `<div class="item-context"><code>${escapeHtml(item.context)}</code></div>` : ''}
+    </div>`;
+  }
+
+  // Fixes
+  for (let idx = 0; idx < fixes.length; idx++) {
+    const item = fixes[idx];
+    html += `<div class="compliance-item item-fix" id="fix-item-${idx}">
+      <div class="item-header">
+        <span class="item-badge badge-fix">FIX</span>
+        <span class="item-type">${escapeHtml(item.type)}</span>
+        ${item.line ? `<span class="item-line">Line ${item.line}</span>` : ''}
+        <span class="item-actions">
+          <button class="fix-btn fix-accept" data-idx="${idx}" title="Accept fix">✓</button>
+          <button class="fix-btn fix-reject" data-idx="${idx}" title="Dismiss">✗</button>
+        </span>
+      </div>
+      <div class="item-message">${escapeHtml(item.message)}</div>
+      ${item.context ? `<div class="item-context"><code>${escapeHtml(item.context)}</code></div>` : ''}
+    </div>`;
+  }
+
+  html += '</div>';
+  compliancePanel.innerHTML = html;
+
+  // Wire up Apply All Fixes
+  const btnApplyAll = document.getElementById('btn-apply-all');
+  if (btnApplyAll) {
+    btnApplyAll.addEventListener('click', applyAllFixes);
+  }
+
+  // Wire up individual accept/reject
+  compliancePanel.querySelectorAll('.fix-accept').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      const fix = fixes[idx];
+      if (fix && fix.type === 'spelling' && fix.original && fix.replacement) {
+        let content = getEditorContent();
+        const regex = new RegExp(`(?<!\\\\)\\b${fix.original}\\b`, 'gi');
+        content = content.replace(regex, fix.replacement);
+        setEditorContent(content);
+      }
+      const el = document.getElementById('fix-item-' + idx);
+      if (el) el.classList.add('item-accepted');
+    });
+  });
+
+  compliancePanel.querySelectorAll('.fix-reject').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      const el = document.getElementById('fix-item-' + idx);
+      if (el) el.classList.add('item-rejected');
+    });
+  });
+}
+
+async function applyAllFixes() {
+  const latex = getEditorContent().trim();
+  try {
+    const res = await fetch('/api/apply-fixes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latex })
+    });
+    const data = await res.json();
+    if (data.latex) {
+      setEditorContent(data.latex);
+      // Switch to editor tab and re-render
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('[data-tab="editor"]').classList.add('active');
+      document.getElementById('tab-editor').classList.add('active');
+      clearTimeout(renderTimeout);
+      renderPreview();
+    }
+  } catch (err) {
+    alert('Failed to apply fixes: ' + err.message);
+  }
+}
 
 // ===== Init =====
 initEditor();

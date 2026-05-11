@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = 5200;
@@ -93,7 +94,6 @@ app.post('/api/compile', async (req, res) => {
 
   const id = crypto.randomBytes(8).toString('hex');
   const tmpDir = path.join('C:\\Users\\amitnandi\\latex-tmp', id);
-  const fs = require('fs');
 
   try {
     fs.mkdirSync(tmpDir, { recursive: true });
@@ -137,6 +137,32 @@ app.post('/api/compile', async (req, res) => {
     // Cleanup after a delay
     setTimeout(() => { try { fs.rmSync(tmpDir, { recursive: true }); } catch {} }, 5000);
   }
+});
+
+// ── Compliance Checker ──
+const { checkCompliance, applyFixes } = require('./compliance-checker');
+
+app.post('/api/check-compliance', (req, res) => {
+  const { latex } = req.body;
+  if (!latex) return res.status(400).json({ error: 'No LaTeX source' });
+
+  const rulesPath = path.join(__dirname, 'boc-style-rules.yml');
+  if (!fs.existsSync(rulesPath)) {
+    return res.status(500).json({ error: 'Style rules file not found' });
+  }
+
+  const results = checkCompliance(latex, rulesPath);
+  res.json(results);
+});
+
+app.post('/api/apply-fixes', (req, res) => {
+  const { latex } = req.body;
+  if (!latex) return res.status(400).json({ error: 'No LaTeX source' });
+
+  const rulesPath = path.join(__dirname, 'boc-style-rules.yml');
+  const results = checkCompliance(latex, rulesPath);
+  const fixed = applyFixes(latex, results.fixes);
+  res.json({ latex: fixed, fixes: results.fixes });
 });
 
 app.listen(PORT, () => {
