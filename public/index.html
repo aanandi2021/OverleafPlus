@@ -59,6 +59,7 @@
           <button class="tab-btn active" data-tab="editor">📝 Editor</button>
           <button class="tab-btn" data-tab="paste">📋 Paste LaTeX</button>
           <button class="tab-btn" data-tab="compliance">✅ Compliance</button>
+          <button class="tab-btn" data-tab="diff">⇔ Diff</button>
         </div>
         <div class="panel-actions">
           <button id="btn-check" class="panel-btn" title="Check Compliance">🔍 Check</button>
@@ -86,6 +87,24 @@
         <div id="compliance-panel" class="compliance-panel">
           <div class="compliance-placeholder">
             <p>Click <strong>🔍 Check</strong> to analyze the current LaTeX against Bank of Canada style rules.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diff tab -->
+      <div id="tab-diff" class="tab-content">
+        <div class="diff-container">
+          <div class="diff-header">
+            <span class="diff-label diff-label-before">Before (Original)</span>
+            <span class="diff-label diff-label-after">After (Corrected)</span>
+            <button id="btn-apply-diff" class="panel-btn primary" style="margin-left:auto">✨ Apply Changes</button>
+          </div>
+          <div class="diff-panels">
+            <div id="diff-before" class="diff-pane diff-before"></div>
+            <div id="diff-after" class="diff-pane diff-after"></div>
+          </div>
+          <div class="diff-placeholder" id="diff-placeholder">
+            <p>Run a compliance check first, then click <strong>⇔ Diff</strong> to see before/after.</p>
           </div>
         </div>
       </div>

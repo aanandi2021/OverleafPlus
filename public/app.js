@@ -5,6 +5,8 @@ let chatHistory = []; // { role, content } for LLM context
 let editorTextarea = null;
 let renderTimeout = null;
 let lastComplianceResults = null;
+let originalLatex = '';  // snapshot before fixes
+let correctedLatex = ''; // after fixes
 
 // ===== DOM elements =====
 const chatMessages = document.getElementById('chat-messages');
@@ -472,6 +474,95 @@ async function applyAllFixes() {
     alert('Failed to apply fixes: ' + err.message);
   }
 }
+
+// ===== Diff View =====
+function computeDiff(before, after) {
+  const beforeLines = before.split('\n');
+  const afterLines = after.split('\n');
+  const maxLen = Math.max(beforeLines.length, afterLines.length);
+  const diff = [];
+  for (let i = 0; i < maxLen; i++) {
+    const bLine = beforeLines[i] || '';
+    const aLine = afterLines[i] || '';
+    if (bLine === aLine) {
+      diff.push({ type: 'same', before: bLine, after: aLine, line: i + 1 });
+    } else {
+      diff.push({ type: 'changed', before: bLine, after: aLine, line: i + 1 });
+    }
+  }
+  return diff;
+}
+
+function renderDiffView() {
+  const diffBefore = document.getElementById('diff-before');
+  const diffAfter = document.getElementById('diff-after');
+  const placeholder = document.getElementById('diff-placeholder');
+
+  if (!originalLatex || !correctedLatex) {
+    // Generate the corrected version now
+    originalLatex = getEditorContent();
+    fetch('/api/apply-fixes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latex: originalLatex })
+    }).then(r => r.json()).then(data => {
+      correctedLatex = data.latex || originalLatex;
+      showDiff();
+    }).catch(() => {
+      correctedLatex = originalLatex;
+      showDiff();
+    });
+    return;
+  }
+  showDiff();
+
+  function showDiff() {
+    if (placeholder) placeholder.style.display = 'none';
+    const diff = computeDiff(originalLatex, correctedLatex);
+    const changedCount = diff.filter(d => d.type === 'changed').length;
+
+    let beforeHtml = '';
+    let afterHtml = '';
+    for (const d of diff) {
+      const ln = `<span class="diff-linenum">${String(d.line).padStart(4)}</span>`;
+      if (d.type === 'same') {
+        beforeHtml += `<div class="diff-line">${ln}${escapeHtml(d.before)}</div>`;
+        afterHtml += `<div class="diff-line">${ln}${escapeHtml(d.after)}</div>`;
+      } else {
+        beforeHtml += `<div class="diff-line diff-removed">${ln}${escapeHtml(d.before)}</div>`;
+        afterHtml += `<div class="diff-line diff-added">${ln}${escapeHtml(d.after)}</div>`;
+      }
+    }
+
+    diffBefore.innerHTML = beforeHtml || '<div class="diff-line">No content</div>';
+    diffAfter.innerHTML = afterHtml || '<div class="diff-line">No content</div>';
+
+    // Sync scroll between panes
+    diffBefore.onscroll = () => { diffAfter.scrollTop = diffBefore.scrollTop; };
+    diffAfter.onscroll = () => { diffBefore.scrollTop = diffAfter.scrollTop; };
+  }
+}
+
+// Wire up diff tab — render when clicked
+document.querySelector('[data-tab="diff"]')?.addEventListener('click', () => {
+  originalLatex = getEditorContent();
+  correctedLatex = '';  // force re-fetch
+  renderDiffView();
+});
+
+// Wire up Apply Changes button in diff view
+document.getElementById('btn-apply-diff')?.addEventListener('click', () => {
+  if (correctedLatex) {
+    setEditorContent(correctedLatex);
+    clearTimeout(renderTimeout);
+    renderPreview();
+    // Switch back to editor tab
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('[data-tab="editor"]').classList.add('active');
+    document.getElementById('tab-editor').classList.add('active');
+  }
+});
 
 // ===== Init =====
 initEditor();
