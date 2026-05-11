@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaTeX Web App Ideation</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Full LaTeX compilation via cloud API -->
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <h1>LaTeX Web App Ideation</h1>
+      <span class="subtitle">Describe → Generate → Preview</span>
+    </div>
+    <div class="header-right">
+      <button id="btn-new" class="header-btn" title="New Document">✨ New</button>
+      <button id="btn-toggle-chat" class="header-btn toggle-btn active" title="Toggle Chat">💬 Chat</button>
+      <button id="btn-toggle-editor" class="header-btn toggle-btn active" title="Toggle Editor">📝 Editor</button>
+      <button id="btn-toggle-preview" class="header-btn toggle-btn active" title="Toggle Preview">👁 Preview</button>
+    </div>
+  </header>
+
+  <!-- Main three-panel layout -->
+  <main class="panels">
+    <!-- Left: Chat Panel -->
+    <section id="panel-chat" class="panel panel-chat">
+      <div class="panel-header">
+        <span>Chat</span>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <div class="message system-message">
+          <div class="message-bubble">
+            Welcome! Describe the LaTeX document you'd like to create. For example:
+            <ul>
+              <li>"Create a one-page resume for a software engineer"</li>
+              <li>"Write a two-column paper about machine learning"</li>
+              <li>"Create a math proof of the Pythagorean theorem"</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea id="chat-input" placeholder="Describe your document..." rows="3"></textarea>
+        <button id="btn-send" class="btn-send" title="Send">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Center: Editor Panel -->
+    <section id="panel-editor" class="panel panel-editor">
+      <div class="panel-header">
+        <span>LaTeX Editor</span>
+        <div class="panel-actions">
+          <button id="btn-copy" class="panel-btn" title="Copy LaTeX">📋 Copy</button>
+          <button id="btn-render" class="panel-btn primary" title="Render Preview">▶ Render</button>
+        </div>
+      </div>
+      <div id="editor-container" class="editor-container"></div>
+    </section>
+
+    <!-- Right: Preview Panel -->
+    <section id="panel-preview" class="panel panel-preview">
+      <div class="panel-header">
+        <span>Live Preview</span>
+        <div class="panel-actions">
+          <span id="preview-status" class="preview-status"></span>
+        </div>
+      </div>
+      <div id="preview-container" class="preview-container">
+        <div class="preview-placeholder">
+          <p>Your rendered document will appear here.</p>
+          <p class="muted">Type a prompt in the chat or edit LaTeX directly.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
