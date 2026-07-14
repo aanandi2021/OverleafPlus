@@ -69,12 +69,22 @@ app.post('/api/generate', async (req, res) => {
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
 
-    // Extract LaTeX from code fence
-    const latexMatch = content.match(/```latex\s*\n([\s\S]*?)```/);
-    const latex = latexMatch ? latexMatch[1].trim() : '';
-
-    // Extract explanation (everything after the code fence)
-    const explanation = content.replace(/```latex\s*\n[\s\S]*?```/, '').trim();
+    // Extract LaTeX — tolerant of fence variations (```latex, ```tex, ```LaTeX,
+    // bare ```), and fall back to a raw \documentclass...\end{document} block so
+    // the editor still populates if the model omits or mislabels the fence.
+    let latex = '';
+    let explanation = content;
+    const fence = content.match(/```[ \t]*(?:latex|tex)?[ \t]*\r?\n([\s\S]*?)```/i);
+    if (fence && /\\(documentclass|begin)/.test(fence[1])) {
+      latex = fence[1].trim();
+      explanation = content.replace(fence[0], '').trim();
+    } else {
+      const raw = content.match(/\\documentclass[\s\S]*?\\end\{document\}/);
+      if (raw) {
+        latex = raw[0].trim();
+        explanation = content.replace(raw[0], '').replace(/```/g, '').trim();
+      }
+    }
 
     res.json({ latex, explanation, raw: content });
   } catch (err) {
@@ -163,6 +173,42 @@ app.post('/api/apply-fixes', (req, res) => {
   const results = checkCompliance(latex, rulesPath);
   const fixed = applyFixes(latex, results.fixes);
   res.json({ latex: fixed, fixes: results.fixes });
+});
+
+// ── Repo sync: check-out / check-in to Overleaf (native) or GitHub ──
+const repoSync = require('./repo-sync');
+
+app.get('/api/repo/status', (req, res) => {
+  try {
+    res.json(repoSync.status());
+  } catch (err) {
+    res.status(500).json({ error: repoSync.redact(err.message) });
+  }
+});
+
+app.post('/api/repo/checkout', (req, res) => {
+  const { target, projectUrl } = req.body || {};
+  if (!target) return res.status(400).json({ error: 'Missing "target" (overleaf | github)' });
+  try {
+    console.log(`[repo] checkout ${target}${projectUrl ? ' (custom project)' : ''}...`);
+    res.json(repoSync.checkout(target, { projectUrl }));
+  } catch (err) {
+    console.error('[repo] checkout failed:', repoSync.redact(err.message));
+    res.status(400).json({ error: repoSync.redact(err.message) });
+  }
+});
+
+app.post('/api/repo/checkin', (req, res) => {
+  const { target, latex, message, mode, openPr, projectUrl } = req.body || {};
+  if (!target) return res.status(400).json({ error: 'Missing "target" (overleaf | github)' });
+  if (!latex) return res.status(400).json({ error: 'No LaTeX source provided' });
+  try {
+    console.log(`[repo] check-in ${target} (mode=${mode || 'sidecar'})...`);
+    res.json(repoSync.checkin(target, { latex, message, mode, openPr, projectUrl }));
+  } catch (err) {
+    console.error('[repo] check-in failed:', repoSync.redact(err.message));
+    res.status(400).json({ error: repoSync.redact(err.message) });
+  }
 });
 
 app.listen(PORT, () => {

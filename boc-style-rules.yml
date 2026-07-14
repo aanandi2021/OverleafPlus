@@ -87,3 +87,30 @@ template:
     - amsmath
     - geometry
   font_size: "12pt"
+
+# Dictionary-based misspelling detection (Canadian English, offline).
+# Flags prose words the en-CA dictionary does not recognise, with suggestions.
+# LaTeX commands, math, labels/refs/citations and ALL-CAPS acronyms are ignored.
+spellcheck:
+  enabled: true
+  min_length: 3
+  max_suggestions: 3
+  ignore:
+    - Macklem
+    - Poloz
+    - Carney
+    - Basel
+    - eurozone
+    - repo
+    - repos
+    - dataset
+    - datasets
+    - endogeneity
+    - heteroskedasticity
+    - autocorrelation
+    - stochastic
+    - calibrated
+    - counterfactual
+    - Overleaf
+    - Copilot
+    - workflow

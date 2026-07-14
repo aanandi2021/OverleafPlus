@@ -1,0 +1,261 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{setspace}
+
+\onehalfspacing
+
+\title{Inflation, Attention, and the Public Climate Narrative:\\
+A Treatise on the Correlation Between Consumer Price Inflation and Social Media Mentions of ``Global Warming''}
+\author{Prepared as a methodological note}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper develops a plausible empirical framework for studying the relationship between consumer price inflation and the frequency of social media mentions of the phrase ``Global Warming.'' The central claim is deliberately modest: public attention to climate risk may be correlated with inflation through common exposure to energy prices, food-price shocks, policy uncertainty, and macroeconomic narratives. The paper does not assert that social media mentions cause inflation. Instead, it formalises a set of mechanisms, proposes a monthly panel of inflation and attention measures, and outlines econometric specifications that could distinguish contemporaneous correlation, lead-lag dynamics, and potential narrative amplification effects. The proposed evidence is consistent with a world in which climate attention is partly a proxy for broader concern about energy scarcity, weather-driven food disruptions, and transition-policy costs.
+\end{abstract}
+
+\section{Introduction}
+
+Inflation is conventionally modelled as the outcome of demand pressure, supply disturbances, expectations, and monetary policy. Yet modern inflation dynamics are also narrated in real time by households, firms, journalists, and social media users. When a term such as ``Global Warming'' rises in public discourse, it may indicate heightened attention to weather events, energy transition policy, carbon pricing, food supply risks, or generalised uncertainty about future costs.
+
+This paper considers whether the volume of social media mentions of ``Global Warming'' is correlated with inflation. The phrase is treated not as a physical climate variable, but as an attention variable. Its interpretation is therefore behavioural and informational. A surge in mentions may accompany heat waves, wildfires, floods, energy-price spikes, or policy debates. Each of these can have inflationary relevance, either directly through prices or indirectly through expectations.
+
+The empirical question is:
+\begin{quote}
+To what extent do changes in inflation co-move with changes in social media attention to ``Global Warming,'' after controlling for standard macroeconomic drivers?
+\end{quote}
+
+\section{Conceptual Framework}
+
+Let $\pi_t$ denote the monthly inflation rate, measured as the annualised month-over-month change in the consumer price index:
+\begin{equation}
+    \pi_t = 1200 \cdot \Delta \log(CPI_t).
+\end{equation}
+
+Let $M_t$ denote the number of social media posts in month $t$ containing the phrase ``Global Warming.'' Because mention counts are skewed and may contain zeroes, define the attention index:
+\begin{equation}
+    A_t = \log(1 + M_t).
+\end{equation}
+
+The simplest object of interest is the unconditional correlation:
+\begin{equation}
+    \rho_{\pi,A} =
+    \frac{\operatorname{Cov}(\pi_t, A_t)}
+    {\sqrt{\operatorname{Var}(\pi_t)}\sqrt{\operatorname{Var}(A_t)}}.
+\end{equation}
+
+However, this raw correlation is not economically sufficient. A positive value of $\rho_{\pi,A}$ may arise because both variables respond to a third force, such as oil prices or food-price shocks. The empirical design must therefore separate three channels:
+
+\begin{enumerate}
+    \item \textbf{Common shocks:} climate-related discussion and inflation both rise after energy or food shocks.
+    \item \textbf{Expectations channel:} climate discourse affects perceived future costs and price-setting behaviour.
+    \item \textbf{Policy channel:} discussion of climate policy, carbon taxes, or transition costs coincides with expected changes in relative prices.
+\end{enumerate}
+
+\section{Data Design}
+
+A credible monthly dataset would include:
+
+\begin{itemize}
+    \item headline CPI inflation, core inflation, food inflation, and energy inflation;
+    \item social media counts for the exact phrase ``Global Warming'';
+    \item related climate-attention controls, such as ``climate change,'' ``carbon tax,'' and ``wildfire'';
+    \item commodity controls, including oil, natural gas, wheat, and fertiliser prices;
+    \item macro controls, including unemployment, output-gap proxies, exchange rates, and policy interest rates;
+    \item weather and disaster variables, such as temperature anomalies, wildfire smoke days, drought indices, and flood events.
+\end{itemize}
+
+The phrase-specific attention measure should be normalised by total post volume:
+\begin{equation}
+    S_t = 10^6 \cdot \frac{M_t}{N_t},
+\end{equation}
+where $N_t$ is the total number of observed social media posts in month $t$. This produces mentions per million posts and reduces bias from growth or decline in platform usage.
+
+\section{Baseline Econometric Specification}
+
+The baseline regression is:
+\begin{equation}
+    \pi_t = \alpha + \beta A_t + \gamma'X_t + \varepsilon_t,
+    \label{eq:baseline}
+\end{equation}
+where $X_t$ contains energy inflation, food inflation, unemployment, exchange-rate changes, commodity prices, and seasonal controls.
+
+The coefficient $\beta$ measures the conditional association between attention and inflation. If $\beta > 0$, inflation tends to be higher in months when ``Global Warming'' attention is elevated, after accounting for observable controls. The interpretation remains correlational unless stronger identification assumptions are imposed.
+
+\section{Dynamic Specification}
+
+Inflation and attention may move with lags. Social media discourse may react to inflation news, or inflation may respond to supply shocks that social media detects before official price data are released. A distributed-lag model is therefore appropriate:
+\begin{equation}
+    \pi_t =
+    \alpha
+    + \sum_{j=0}^{J} \beta_j A_{t-j}
+    + \sum_{k=1}^{K} \phi_k \pi_{t-k}
+    + \gamma'X_t
+    + u_t.
+    \label{eq:distributed_lag}
+\end{equation}
+
+The cumulative association is:
+\begin{equation}
+    B_J = \sum_{j=0}^{J} \beta_j.
+\end{equation}
+
+If $B_J$ is positive and statistically meaningful, a sustained attention shock is associated with a higher inflation path over the following $J$ months.
+
+\section{Narrative Amplification Model}
+
+The most plausible theoretical mechanism is not that posts create inflation mechanically. Rather, attention may amplify the perceived persistence of shocks. Consider a simplified expectations-augmented Phillips curve:
+\begin{equation}
+    \pi_t = \kappa x_t + \lambda E_t[\pi_{t+1}] + s_t,
+\end{equation}
+where $x_t$ is economic slack and $s_t$ is a supply shock. Suppose expected inflation contains a narrative component:
+\begin{equation}
+    E_t[\pi_{t+1}] =
+    \theta E_t^{m}[\pi_{t+1}]
+    + (1-\theta) E_t^{n}[\pi_{t+1}],
+\end{equation}
+where $E_t^{m}$ is a model-consistent forecast and $E_t^{n}$ is narrative-influenced expectation formation.
+
+Let the narrative component depend on attention:
+\begin{equation}
+    E_t^{n}[\pi_{t+1}] = \eta_0 + \eta_1 A_t + \eta_2 \Delta A_t.
+\end{equation}
+
+Substituting yields:
+\begin{equation}
+    \pi_t =
+    \kappa x_t
+    + \lambda \theta E_t^{m}[\pi_{t+1}]
+    + \lambda(1-\theta)(\eta_0 + \eta_1 A_t + \eta_2 \Delta A_t)
+    + s_t.
+\end{equation}
+
+In this model, attention matters if it changes expected persistence. A rise in ``Global Warming'' mentions could signal that households and firms are connecting current prices to broader structural risks: crop failures, insurance costs, carbon costs, energy scarcity, and infrastructure resilience spending.
+
+\section{Vector Autoregression}
+
+To examine feedback, one can estimate a vector autoregression:
+\begin{equation}
+    Y_t = c + \sum_{p=1}^{P} \Phi_p Y_{t-p} + \Gamma X_t + e_t,
+\end{equation}
+where:
+\begin{equation}
+    Y_t =
+    \begin{bmatrix}
+    \pi_t \\
+    A_t \\
+    q_t
+    \end{bmatrix},
+\end{equation}
+and $q_t$ is an energy-price index.
+
+Granger-style tests ask whether lagged attention improves inflation forecasts:
+\begin{equation}
+    H_0: \Phi_{12,1} = \Phi_{12,2} = \cdots = \Phi_{12,P} = 0.
+\end{equation}
+
+Rejecting $H_0$ would not prove causality, but it would indicate that attention contains predictive information beyond lagged inflation and energy prices.
+
+\section{Illustrative Empirical Pattern}
+
+A plausible empirical result would be modest and state-dependent. Table~\ref{tab:illustrative} presents an illustrative pattern, not an actual estimate.
+
+\begin{table}[h]
+\centering
+\caption{Illustrative conditional associations}
+\label{tab:illustrative}
+\begin{tabular}{lccc}
+\toprule
+Dependent variable & Attention coefficient & Controls & Interpretation \\
+\midrule
+Headline inflation & Positive, small & Energy, food, FX & Attention co-moves with broad shocks \\
+Core inflation & Near zero & Energy, food, slack & Less direct pass-through \\
+Food inflation & Positive & Weather, wheat, oil & Stronger climate-supply link \\
+Energy inflation & Positive & Oil, gas & Attention follows energy debate \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The expected pattern is strongest for food and energy components, weaker for core inflation, and unstable across regimes. The relationship should be larger during periods of salient climate events or energy-transition policy debate.
+
+\section{Identification Challenges}
+
+There are four central threats to interpretation.
+
+\subsection{Reverse Causality}
+
+Inflation itself may generate more climate discussion if people attribute high prices to energy transition policy, extreme weather, or food scarcity. In that case:
+\begin{equation}
+    A_t = \delta_0 + \delta_1 \pi_t + \delta'Z_t + \nu_t.
+\end{equation}
+
+\subsection{Omitted Variables}
+
+Weather disasters, geopolitical shocks, and commodity-price movements may jointly affect inflation and climate attention. Omitting them biases $\beta$ in Equation~\ref{eq:baseline}.
+
+\subsection{Platform Composition}
+
+Social media volume changes over time because of user migration, bot activity, content moderation, and platform policy. Normalisation by total post volume helps, but does not eliminate compositional bias.
+
+\subsection{Phrase Drift}
+
+The term ``Global Warming'' may decline relative to ``climate change'' or ``climate crisis.'' A stable attention index should therefore include robustness checks using alternative phrases.
+
+\section{Robustness Checks}
+
+A credible study should report:
+
+\begin{enumerate}
+    \item alternative attention terms, including ``climate change,'' ``carbon tax,'' and ``wildfire'';
+    \item separate estimates for headline, core, food, and energy inflation;
+    \item pre- and post-pandemic subsamples;
+    \item exclusion of months with major geopolitical energy shocks;
+    \item Newey-West standard errors for serial correlation;
+    \item placebo terms unrelated to climate, such as randomly selected neutral phrases;
+    \item out-of-sample forecast comparisons with and without attention variables.
+\end{enumerate}
+
+\section{Interpretation}
+
+The economically plausible conclusion is not that online mentions of ``Global Warming'' directly increase prices. Rather, the attention series may function as a real-time narrative index. It can capture public salience around climate-linked supply risks, transition costs, and energy-policy uncertainty. Such salience may matter because inflation is partly forward-looking: firms set prices based on expected costs, workers negotiate wages based on expected purchasing power, and households interpret price changes through available narratives.
+
+If the estimated relationship is positive and robust, the policy implication is informational. Central banks and public institutions may benefit from monitoring climate-attention indicators as part of a broader nowcasting toolkit. These indicators should complement, not replace, commodity prices, survey expectations, and conventional macroeconomic data.
+
+\section{Conclusion}
+
+The correlation between inflation and social media mentions of ``Global Warming'' is a plausible empirical object because both variables are connected to energy, food, weather, expectations, and policy debate. A careful study would treat social media mentions as an attention proxy, not as a structural cause. The most defensible finding would be a modest, state-dependent association concentrated in food and energy inflation, with weaker evidence for core inflation.
+
+The broader lesson is that inflation now unfolds in a dense information environment. Public narratives do not determine the price level by themselves, but they may shape how shocks are perceived, transmitted, and expected to persist. In that sense, climate attention is not merely noise around the inflation process; it may be one of the signals through which households and firms organise their understanding of future costs.
+
+\begin{thebibliography}{9}
+
+\bibitem{coibion2020}
+Coibion, O., Gorodnichenko, Y., and Weber, M. (2020).
+\textit{The Cost of the COVID-19 Crisis: Lockdowns, Macroeconomic Expectations, and Consumer Spending}.
+NBER Working Paper.
+
+\bibitem{shiller2019}
+Shiller, R. J. (2019).
+\textit{Narrative Economics: How Stories Go Viral and Drive Major Economic Events}.
+Princeton University Press.
+
+\bibitem{ng2022}
+Ng, S. (2022).
+Modeling macroeconomic variations after COVID-19.
+\textit{Journal of Economic Perspectives}, 36(3), 103--126.
+
+\bibitem{bolton2020}
+Bolton, P., Despres, M., Pereira da Silva, L. A., Samama, F., and Svartzman, R. (2020).
+\textit{The Green Swan: Central Banking and Financial Stability in the Age of Climate Change}.
+Bank for International Settlements.
+
+\end{thebibliography}
+
+\end{document}

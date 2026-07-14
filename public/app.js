@@ -227,6 +227,18 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Escape a string for safe use inside a RegExp.
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Preserve the capitalisation of the matched token when substituting.
+function matchCase(src, tgt) {
+  if (src === src.toUpperCase() && src !== src.toLowerCase()) return tgt.toUpperCase();
+  if (src[0] === src[0].toUpperCase()) return tgt.charAt(0).toUpperCase() + tgt.slice(1);
+  return tgt;
+}
+
 // ===== Copy to clipboard =====
 async function copyLatex() {
   const text = getEditorContent();
@@ -431,11 +443,15 @@ function renderComplianceResults(data) {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.idx);
       const fix = fixes[idx];
-      if (fix && fix.type === 'spelling' && fix.original && fix.replacement) {
+      if (fix && fix.original && fix.replacement && (fix.type === 'spelling' || fix.type === 'misspelling')) {
         let content = getEditorContent();
-        const regex = new RegExp(`(?<!\\\\)\\b${fix.original}\\b`, 'gi');
-        content = content.replace(regex, fix.replacement);
+        const regex = new RegExp(`(?<!\\\\)\\b${escapeRegExp(fix.original)}\\b`, 'gi');
+        content = fix.type === 'misspelling'
+          ? content.replace(regex, (m) => matchCase(m, fix.replacement))
+          : content.replace(regex, fix.replacement);
         setEditorContent(content);
+        clearTimeout(renderTimeout);
+        renderPreview();
       }
       const el = document.getElementById('fix-item-' + idx);
       if (el) el.classList.add('item-accepted');
@@ -567,3 +583,167 @@ document.getElementById('btn-apply-diff')?.addEventListener('click', () => {
 // ===== Init =====
 initEditor();
 chatInput.focus();
+
+// ===== Repo: check-out / check-in (Overleaf native + GitHub) =====
+let repoStatus = null;
+
+function getRepoTarget() {
+  const el = document.querySelector('input[name="repo-target"]:checked');
+  return el ? el.value : 'overleaf';
+}
+
+function repoLog(msg, type) {
+  const log = document.getElementById('repo-log');
+  if (!log) return;
+  if (log.querySelector('.muted')) log.innerHTML = '';
+  const entry = document.createElement('div');
+  entry.className = 'repo-log-entry' + (type ? ' ' + type : '');
+  const time = new Date().toLocaleTimeString();
+  entry.innerHTML = `<span class="repo-log-time">${time}</span> ${msg}`;
+  log.prepend(entry);
+}
+
+// Mirror a repo event into the left-hand chat panel.
+function addRepoMessage(html) {
+  const div = document.createElement('div');
+  div.className = 'message ai-message repo-chat-message';
+  const label = document.createElement('div');
+  label.className = 'message-label';
+  label.textContent = '🔗 Repo';
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+  bubble.innerHTML = html;
+  div.appendChild(label);
+  div.appendChild(bubble);
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Render a change summary (from repo-sync) as HTML.
+function formatSummary(summary) {
+  if (!summary) return '';
+  const n = summary.changedLines || 0;
+  if (n === 0) return '<div class="repo-summary">No content changes — the checked-in file matches the source.</div>';
+  let html = `<div class="repo-summary"><strong>${n} change${n === 1 ? '' : 's'} since checkout</strong>`;
+  if (summary.samples && summary.samples.length) {
+    html += '<ul class="repo-summary-list">';
+    for (const s of summary.samples) {
+      html += `<li><span class="repo-del">${escapeHtml(s.from)}</span> → <span class="repo-add">${escapeHtml(s.to)}</span></li>`;
+    }
+    html += '</ul>';
+    if (n > summary.samples.length) html += `<span class="muted">…and ${n - summary.samples.length} more.</span>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function getRepoProjectUrl() {
+  const v = (document.getElementById('repo-project-url')?.value || '').trim();
+  return v || undefined;
+}
+
+function updateRepoTargetUI() {
+  const target = getRepoTarget();
+  document.getElementById('repo-overleaf-opts').style.display = target === 'overleaf' ? '' : 'none';
+  document.getElementById('repo-github-opts').style.display = target === 'github' ? '' : 'none';
+  document.getElementById('repo-project-field').style.display = target === 'overleaf' ? '' : 'none';
+  const remoteEl = document.getElementById('repo-remote');
+  if (repoStatus && repoStatus[target]) {
+    const s = repoStatus[target];
+    remoteEl.textContent = s.configured ? s.remote : `Not configured — ${s.reason || ''}`;
+    remoteEl.className = 'repo-remote ' + (s.configured ? 'ok' : 'error');
+    // Prefill the Overleaf project field placeholder with the .env default.
+    if (target === 'overleaf') {
+      const inp = document.getElementById('repo-project-url');
+      if (inp && s.projectId) inp.placeholder = `default: ${s.projectId} (from .env) — or paste another project URL/ID`;
+    }
+  } else {
+    remoteEl.textContent = '—';
+    remoteEl.className = 'repo-remote muted';
+  }
+}
+
+async function loadRepoStatus() {
+  try {
+    const res = await fetch('/api/repo/status');
+    repoStatus = await res.json();
+  } catch (e) {
+    repoStatus = null;
+  }
+  updateRepoTargetUI();
+}
+
+document.querySelectorAll('input[name="repo-target"]').forEach((r) =>
+  r.addEventListener('change', updateRepoTargetUI)
+);
+
+document.getElementById('btn-repo-checkout')?.addEventListener('click', async () => {
+  const target = getRepoTarget();
+  const btn = document.getElementById('btn-repo-checkout');
+  btn.disabled = true;
+  repoLog(`⬇ Checking out from <strong>${target}</strong>…`);
+  try {
+    const res = await fetch('/api/repo/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target, projectUrl: getRepoProjectUrl() }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Checkout failed');
+    setEditorContent(data.latex);
+    originalLatex = data.latex;
+    repoLog(`✅ Checked out <code>${data.file}</code> @ <code>${data.commit}</code> (${data.latex.length} chars)`, 'ok');
+    addRepoMessage(`⬇ <strong>Checked out</strong> <code>${data.file}</code> from <strong>${target}</strong> @ <code>${data.commit}</code>.<br>Run <strong>🔍 Check</strong>, apply fixes, then <strong>⬆ Check in</strong> to complete the round-trip.`);
+    // jump to editor + render
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
+    document.querySelector('[data-tab="editor"]').classList.add('active');
+    document.getElementById('tab-editor').classList.add('active');
+    clearTimeout(renderTimeout);
+    renderPreview();
+  } catch (e) {
+    repoLog(`❌ ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('btn-repo-checkin')?.addEventListener('click', async () => {
+  const target = getRepoTarget();
+  const latex = getEditorContent().trim();
+  if (!latex || latex === '% Your LaTeX document will appear here') {
+    repoLog('❌ Nothing to check in — the editor is empty.', 'error');
+    return;
+  }
+  const message = document.getElementById('repo-message').value.trim();
+  const mode = (document.querySelector('input[name="repo-mode"]:checked') || {}).value || 'sidecar';
+  const openPr = document.getElementById('repo-open-pr')?.checked;
+  const btn = document.getElementById('btn-repo-checkin');
+  btn.disabled = true;
+  repoLog(`⬆ Checking in to <strong>${target}</strong>…`);
+  try {
+    const res = await fetch('/api/repo/checkin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target, latex, message, mode, openPr, projectUrl: getRepoProjectUrl() }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Check-in failed');
+    const summaryHtml = formatSummary(data.summary);
+    repoLog(`✅ ${data.note || 'Checked in.'} (<code>${data.file}</code> → <code>${data.branch}</code> @ <code>${data.commit}</code>)`, 'ok');
+    if (summaryHtml) repoLog(summaryHtml, 'ok');
+    if (data.pr) repoLog(`🔗 PR: <a href="${data.pr}" target="_blank">${data.pr}</a>`, 'ok');
+    if (data.prError) repoLog(`⚠ PR not opened: ${data.prError}`, 'warn');
+    // Mirror the round-trip result into the chat
+    let chat = `⬆ <strong>Checked in</strong> to <strong>${target}</strong> — <code>${data.file}</code> on <code>${data.branch}</code> @ <code>${data.commit}</code>.<br>${data.note || ''}`;
+    chat += summaryHtml;
+    if (data.pr) chat += `<br>🔗 <a href="${data.pr}" target="_blank">View pull request diff</a>`;
+    addRepoMessage(chat);
+  } catch (e) {
+    repoLog(`❌ ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+loadRepoStatus();

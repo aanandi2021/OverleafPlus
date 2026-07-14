@@ -744,3 +744,54 @@ html, body {
 .diff-removed { background: #3d1f1f; color: #ff9999; }
 .diff-added { background: #1f3d1f; color: #99ff99; }
 .diff-placeholder { padding: 40px; text-align: center; color: #666; }
+
+/* ===== Repo (check-in / check-out) tab ===== */
+.repo-panel { padding: 16px; overflow-y: auto; height: 100%; font-size: 13px; }
+.repo-intro { color: var(--text-muted); margin-bottom: 16px; }
+.repo-field { margin-bottom: 16px; }
+.repo-field > label { display: block; font-weight: 600; color: var(--accent); margin-bottom: 6px; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+.repo-target-group { display: flex; flex-direction: column; gap: 6px; }
+.repo-radio { display: flex; align-items: center; gap: 8px; color: var(--text); font-weight: 400; text-transform: none; letter-spacing: normal; cursor: pointer; margin-bottom: 4px; }
+.repo-radio input { accent-color: var(--accent); }
+.repo-remote { margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: var(--bg-input); font-family: monospace; font-size: 12px; word-break: break-all; }
+.repo-remote.ok { color: var(--green); }
+.repo-remote.error { color: var(--red); }
+.repo-remote.muted { color: var(--text-muted); }
+.repo-actions { display: flex; gap: 10px; margin-bottom: 16px; }
+.repo-actions .panel-btn { flex: 1; padding: 10px; }
+.repo-input { width: 100%; padding: 8px 10px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+.repo-hint { margin-top: 6px; font-size: 11px; }
+.repo-log { background: var(--bg-editor); border: 1px solid var(--border); border-radius: 6px; padding: 10px; max-height: 220px; overflow-y: auto; font-size: 12px; line-height: 1.6; }
+.repo-log-entry { padding: 3px 0; border-bottom: 1px solid var(--border); }
+.repo-log-entry:last-child { border-bottom: none; }
+.repo-log-entry.ok { color: var(--green); }
+.repo-log-entry.error { color: var(--red); }
+.repo-log-entry.warn { color: #f9e2af; }
+.repo-log-time { color: var(--text-muted); font-family: monospace; margin-right: 6px; }
+.repo-log code, .repo-panel code { background: var(--surface); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+.repo-log a { color: var(--accent); }
+
+/* ===== Repo change summary + chat mirror ===== */
+.repo-summary { margin-top: 4px; }
+.repo-summary-list { margin: 4px 0 0 0; padding-left: 16px; }
+.repo-summary-list li { margin: 2px 0; font-family: monospace; font-size: 11px; }
+.repo-del { color: var(--red); text-decoration: line-through; }
+.repo-add { color: var(--green); }
+.repo-chat-message .message-label { color: var(--accent); }
+.repo-chat-message .message-bubble { border-left: 3px solid var(--accent); }
+.repo-chat-message code { background: var(--surface); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+.repo-chat-message a { color: var(--accent); }
+
+/* v3 version badge */
+.version-badge {
+  display: inline-block;
+  font-size: 0.5em;
+  font-weight: 700;
+  vertical-align: middle;
+  padding: 2px 8px;
+  margin-left: 8px;
+  border-radius: 10px;
+  background: #F96167;
+  color: #fff;
+  letter-spacing: 0.5px;
+}

@@ -12,8 +12,8 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <h1>LaTeX Web App Ideation</h1>
-      <span class="subtitle">Describe → Generate → Preview</span>
+      <h1>LaTeX Web App Ideation <span class="version-badge">v3</span></h1>
+      <span class="subtitle">Describe → Generate → Preview · BoC compliance + spell-check</span>
     </div>
     <div class="header-right">
       <button id="btn-new" class="header-btn" title="New Document">✨ New</button>
@@ -60,6 +60,7 @@
           <button class="tab-btn" data-tab="paste">📋 Paste LaTeX</button>
           <button class="tab-btn" data-tab="compliance">✅ Compliance</button>
           <button class="tab-btn" data-tab="diff">⇔ Diff</button>
+          <button class="tab-btn" data-tab="repo">🔗 Repo</button>
         </div>
         <div class="panel-actions">
           <button id="btn-check" class="panel-btn" title="Check Compliance">🔍 Check</button>
@@ -105,6 +106,56 @@
           </div>
           <div class="diff-placeholder" id="diff-placeholder">
             <p>Run a compliance check first, then click <strong>⇔ Diff</strong> to see before/after.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repo (check-in / check-out) tab -->
+      <div id="tab-repo" class="tab-content">
+        <div class="repo-panel">
+          <div class="repo-intro">
+            <p><strong>Check out</strong> a paper from a synced repo, run compliance, then <strong>check in</strong> the corrected version.</p>
+          </div>
+
+          <div class="repo-field">
+            <label>Target repository</label>
+            <div class="repo-target-group">
+              <label class="repo-radio"><input type="radio" name="repo-target" value="overleaf" checked> 📄 Overleaf (native git bridge)</label>
+              <label class="repo-radio"><input type="radio" name="repo-target" value="github"> 🐙 GitHub (Overleaf-synced mirror)</label>
+            </div>
+            <div id="repo-remote" class="repo-remote muted">—</div>
+          </div>
+
+          <div class="repo-field" id="repo-project-field">
+            <label>Overleaf project <span class="muted">(URL or ID — leave blank for the default in <code>.env</code>)</span></label>
+            <input id="repo-project-url" type="text" class="repo-input" placeholder="https://www.overleaf.com/project/&lt;id&gt; or the git.overleaf.com id">
+            <p class="repo-hint muted">Your <code>olp_</code> token is <strong>account-level</strong> — one token works for any project you can access. Only the ID here selects which paper to check out.</p>
+          </div>
+
+          <div class="repo-actions">
+            <button id="btn-repo-checkout" class="panel-btn primary">⬇ Check out</button>
+            <button id="btn-repo-checkin" class="panel-btn">⬆ Check in fixes</button>
+          </div>
+
+          <div class="repo-field">
+            <label>Activity — round-trip result</label>
+            <div id="repo-log" class="repo-log"><div class="muted">No activity yet. Check out a paper to begin.</div></div>
+          </div>
+
+          <div class="repo-field">
+            <label>Commit message</label>
+            <input id="repo-message" type="text" class="repo-input" value="Apply Bank of Canada compliance fixes">
+          </div>
+
+          <div class="repo-field" id="repo-overleaf-opts">
+            <label>Overleaf check-in mode</label>
+            <label class="repo-radio"><input type="radio" name="repo-mode" value="sidecar" checked> Review copy — write <code>_compliance.tex</code> sidecar on <code>main</code> (safe)</label>
+            <label class="repo-radio"><input type="radio" name="repo-mode" value="overwrite"> Overwrite source on <code>main</code> (live, one-hop)</label>
+            <p class="repo-hint muted">Overleaf's git bridge only accepts pushes to <code>main</code>, so review happens via a sidecar file rather than a branch.</p>
+          </div>
+
+          <div class="repo-field" id="repo-github-opts" style="display:none">
+            <label class="repo-radio"><input type="checkbox" id="repo-open-pr" checked> Open a pull request from <code>compliance-fixes</code> for review</label>
           </div>
         </div>
       </div>
